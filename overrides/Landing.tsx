@@ -52,7 +52,7 @@ export default function Landing({ works, settings }: { works: Work[]; settings: 
     </section>}
     <section className="motif-field">
       <div className="motif-intro"><span className="micro">НЕ ПО ПОЛКАМ — ПО ОЩУЩЕНИЯМ</span><h2>Куда приведёт<br/><em>одно слово?</em></h2><p>Выберите мотив — и начните с любого текста. У каждого свой вход.</p></div>
-      <div className="motif-list">{categories.map(([category,count],i)=><a key={category} href={`/library?theme=${encodeURIComponent(category)}`} className="motif-link"><span className="motif-no">0{i+1}</span><span className="motif-title">{category}</span><span className="motif-count">{count}</span><ArrowUpRight className="motif-arrow" size={17}/></a>)}</div>
+      <div className="motif-list">{categories.map(([category,count],i)=><a key={category} href={`/assiris/library?theme=${encodeURIComponent(category)}`} className="motif-link"><span className="motif-no">0{i+1}</span><span className="motif-title">{category}</span><span className="motif-count">{count}</span><ArrowUpRight className="motif-arrow" size={17}/></a>)}</div>
     </section>
     <section className="search-room">
       <div className="search-room-top"><span className="micro">ЕСЛИ В ПАМЯТИ ОСТАЛАСЬ СТРОКА</span><span>ПОИСК ПО ВСЕМ ТЕКСТАМ</span></div>
