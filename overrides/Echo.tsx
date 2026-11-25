@@ -29,10 +29,13 @@ export default function Echo({
       .filter((work) => work.id !== currentId)
       .map((work) => {
         const lines = work.text.split("\n");
+        const allMatches = [...norm(work.text).matchAll(new RegExp(pattern.source, "giu"))];
         const matches: { line: string; index: number; count: number }[] = [];
+        let offset = 0;
         lines.forEach((line, index) => {
-          const found = [...norm(line).matchAll(new RegExp(pattern.source, "giu"))].length;
+          const found = allMatches.filter((match) => (match.index ?? -1) >= offset && (match.index ?? -1) < offset + Math.max(1, line.length)).length;
           if (found) matches.push({ line, index, count: found });
+          offset += line.length + 1;
         });
         return { work, matches, count: matches.reduce((sum, item) => sum + item.count, 0) };
       })
