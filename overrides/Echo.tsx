@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { ArrowUpRight, AudioLines, X } from "lucide-react";
+import { ArrowUpRight, Link2, X } from "lucide-react";
 import { Work, norm, urlOf } from "../lib/archive/reader";
 
 function escapeRegExp(value: string) {
@@ -44,7 +44,7 @@ export default function Echo({
   return (
     <div className="echo-veil" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="echo-panel" role="dialog" aria-modal="true" aria-label="Текстовые переклички">
-        <div className="echo-topline"><span><AudioLines size={15}/> ТЕКСТОВЫЕ ПЕРЕКЛИЧКИ</span><button className="iconbtn" onClick={onClose} aria-label="Закрыть"><X/></button></div>
+        <div className="echo-topline"><span><Link2 size={15}/> ТЕКСТОВЫЕ ПЕРЕКЛИЧКИ</span><button className="iconbtn" onClick={onClose} aria-label="Закрыть"><X/></button></div>
         <div className="echo-heading"><span className="echo-kicker">НАЙДЕНО В АРХИВЕ</span><h2>«{phrase}»</h2><p>{total ? `${total} ${total === 1 ? "совпадение" : "совпадений"} в ${results.length} ${results.length === 1 ? "произведении" : "произведениях"}` : "Других точных совпадений не найдено"}</p></div>
         <div className="echo-results">
           {results.map(({ work, matches, count }) => (
