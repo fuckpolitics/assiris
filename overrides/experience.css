@@ -125,3 +125,27 @@
 .atlas-field{grid-template-columns:repeat(2,minmax(0,1fr));gap:0;background-size:50% 82px}.atlas-node,.atlas-node-3{min-height:142px;padding:15px 12px}.atlas-node strong{font-size:18px}.atlas-node-excerpt{font-size:10px}.atlas-node-5 strong{font-size:20px}
 .echo-invitation{grid-template-columns:1fr;gap:22px;padding:60px 24px}.echo-invitation h2{font-size:48px}.echo-invitation p{font-size:13px}.echo-invitation>a{grid-column:auto}
 }
+
+
+/* Refinement: one global navigation, more comfortable reading scale */
+.nocturne-top{display:none}
+.nocturne-center{top:51%}
+.nocturne-kicker,.nocturne-rule,.nocturne-bottom,.nocturne-edge{font-size:10px}
+.nocturne-enter{font-size:14px}
+.first-encounter{font-size:1.06rem}
+.encounter-poem{font-size:clamp(22px,2.7vw,34px);line-height:1.58}
+.motif-intro p,.search-room-foot,.motif-count{font-size:15px}
+.motif-title{font-size:clamp(21px,2.2vw,27px)}
+.search-room-form input{font-size:clamp(28px,4.2vw,52px)}
+.last-words-list strong{font-size:23px}
+@media(max-width:760px){
+  .nocturne{min-height:620px;height:calc(88svh - 56px)}
+  .nocturne-center{left:25px;width:calc(100% - 60px)}
+  .nocturne-center h1{font-size:clamp(62px,13vw,92px)}
+  .nocturne-kicker,.nocturne-rule,.nocturne-bottom,.nocturne-edge{font-size:9px}
+  .first-encounter{padding-left:22px;padding-right:22px}
+  .encounter-poem{font-size:22px;line-height:1.6}
+  .motif-intro p{font-size:16px;line-height:1.8}
+  .motif-title{font-size:22px}
+  .last-words-list strong{font-size:22px}
+}
