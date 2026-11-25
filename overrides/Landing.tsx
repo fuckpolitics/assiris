@@ -20,7 +20,7 @@ export default function Landing({ works, settings }: { works: Work[]; settings: 
         <div className="opening-grain" aria-hidden="true" />
         <div className="opening-content wrap">
           <div className="opening-overline"><span /> АЛЕКСАНДР АНДРИАНОВ <span>·</span> ASSIRIS</div>
-          <h1><span>Слово</span><br/><em>остаётся.</em></h1>
+          <h1><span>Александр</span><br/><em>Андрианов</em></h1>
           <p className="opening-subtitle">Стихотворения и проза</p>
           <div className="opening-actions">
             <a className="opening-primary" href="/library">Исследовать произведения <span>↗</span></a>
