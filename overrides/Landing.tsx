@@ -5,8 +5,8 @@ import { Work, Settings, byNew, date, tags, norm } from "../lib/archive/reader";
 type View = "archive" | "echo" | "lexicon" | "journey";
 const STOP = new Set(("и в во не на я мы вы он она оно они ты вы это этот эта эти тот та те а но или да же ли бы из к по от до за под над при для без как что где когда если то так уже ещё еще был была были быть есть нет мне меня тебе тебя его ее её их нас вам с со у о об обо про приже".split(/\\s+/u)));
 function cleanText(value: string) { return norm(value).toLocaleLowerCase("ru").replace(/ё/gu, "е"); }
-function wordsOf(value: string) { return cleanText(value).match(/[\\p{L}\\p{N}]+/gu) || []; }
-function excerptOf(value: string, limit = 190) { const clean = value.replace(/\\s+/gu, " ").trim(); return clean.length > limit ? clean.slice(0, limit).replace(/\\s+\\S*$/u, "") + "…" : clean; }
+function wordsOf(value: string) { return cleanText(value).match(/[\p{L}\p{N}]+/gu) || []; }
+function excerptOf(value: string, limit = 190) { const clean = value.replace(/\s+/gu, " ").trim(); return clean.length > limit ? clean.slice(0, limit).replace(/\\s+\\S*$/u, "") + "…" : clean; }
 function hash(value: string) { let h = 0; for (let i=0;i<value.length;i++) h = (h*31 + value.charCodeAt(i))|0; return Math.abs(h); }
 function similarity(a: Set<string>, b: Set<string>) { let common=0; a.forEach(x=>{if(b.has(x))common++}); return common / Math.max(1, Math.sqrt(a.size*b.size)); }
 
@@ -52,7 +52,7 @@ export default function Landing({ works, settings }: { works: Work[]; settings: 
   const echoResults = useMemo(()=>{
     const term=cleanText(echoTerm.trim());
     if(!term)return [];
-    const escaped=term.replace(/[.*+?^${}()|[\\]\\\\]/gu,"\\\\$&").replace(/ /gu,"\\\\s+");
+    const escaped=term.replace(/[.*+?^${}()|[\]\\]/gu,"\\term.replace(/[.*+?^${}()|[\\]\\\\]/gu,"\\\\$&")").replace(/ /gu,"\\\\s+");
     const re=new RegExp("(^|[^\\p{L}\\p{N}_])("+escaped+")(?=$|[^\\p{L}\\p{N}_])","giu");
     return works.filter(w=>w.id!==currentId).map(w=>{
       const lines=w.text.split("\\n");
