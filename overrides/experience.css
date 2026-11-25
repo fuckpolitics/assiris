@@ -340,3 +340,55 @@
  .assiris-journey-stop>button strong{font-size:22px}
  .assiris-reader-text{font-size:25px;line-height:1.76}
 }
+
+
+/* Compact the landing hero so the archive appears sooner, especially on phones */
+.nocturne{
+  height: min(690px, 72svh);
+  min-height: 470px;
+  max-height: 690px;
+}
+.nocturne-center{
+  top: 48%;
+  transform: translateY(-50%);
+}
+.nocturne-kicker{margin-bottom:24px}
+.nocturne-center h1{font-size:clamp(68px,8.5vw,118px);line-height:.84}
+.nocturne-rule{margin:28px 0 20px}
+.nocturne-bottom{bottom:18px}
+@media(max-width:760px){
+  .nocturne{
+    height: min(560px, 62svh);
+    min-height: 410px;
+    max-height: 560px;
+  }
+  .nocturne-center{
+    left:22px;
+    top:47%;
+    transform:translateY(-50%);
+    width:calc(100% - 44px);
+  }
+  .nocturne-kicker{
+    font-size:8px;
+    letter-spacing:.16em;
+    margin-bottom:20px;
+  }
+  .nocturne-center h1{
+    font-size:clamp(57px,12.8vw,78px);
+    line-height:.88;
+  }
+  .nocturne-center h1 em{padding-left:24px}
+  .nocturne-rule{
+    width:min(330px,90%);
+    margin:24px 0 16px 3px;
+    font-size:8px;
+  }
+  .nocturne-enter{font-size:11px}
+  .nocturne-enter b{width:34px;height:34px}
+  .nocturne-bottom{
+    left:22px;
+    right:22px;
+    bottom:13px;
+    font-size:7px;
+  }
+}
