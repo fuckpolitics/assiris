@@ -25,8 +25,8 @@ s = reader.read_text(encoding="utf-8")
 if "const [echoOpen, setEchoOpen] = useState(false);" not in s:
     import re
     s, count = re.subn(
-        r'(export default function Reader[\\s\\S]*?\\)\\s*\\{\\n)',
-        r'\\1  const [echoOpen, setEchoOpen] = useState(false);\\n',
+        r'(export default function Reader[\s\S]*?\)\s*\{\n)',
+        r'\1  const [echoOpen, setEchoOpen] = useState(false);\n',
         s,
         count=1,
     )
