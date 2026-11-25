@@ -47,6 +47,10 @@ jobs:
               raise SystemExit("package.json was not found.")
           PY
 
+      - name: Add cinematic hero artwork
+        run: |
+          curl -fL --retry 3 "https://d2ol7oe51mr4n9.cloudfront.net/user_3JHdFVA3SitavsnAmI8m3dn2ZBE/8c8498d2-8ed1-4079-a8f1-01f0c0d38f1e.jpg" -o .site-source/assiris-site/public/art/hero.jpg
+
       - name: Apply ASSIRIS experience update
         run: |
           mkdir -p .site-source/assiris-site/overrides
