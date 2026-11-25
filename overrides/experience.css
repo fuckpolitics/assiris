@@ -299,3 +299,7 @@
  .assiris-hero-title p{margin:0 0 0 4px}
  .assiris-hero-foot{margin-top:auto}
 }
+
+.assiris-reader-text{font-size:clamp(25px,2.9vw,32px);line-height:1.78}
+.assiris-map-node strong{font-size:21px}
+@media(max-width:760px){.assiris-reader-text{font-size:25px;line-height:1.76}.assiris-map-node strong{font-size:20px}}
