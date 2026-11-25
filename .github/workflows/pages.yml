@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/pages.yml"
+      - "overrides/**"
   workflow_dispatch:
 
 permissions:
@@ -44,6 +45,16 @@ jobs:
           if not (source / "package.json").exists():
               raise SystemExit("package.json was not found.")
           PY
+
+      - name: Apply ASSIRIS experience update
+        run: |
+          mkdir -p .site-source/assiris-site/overrides
+          cp overrides/Echo.tsx .site-source/assiris-site/overrides/Echo.tsx
+          cp overrides/Landing.tsx .site-source/assiris-site/overrides/Landing.tsx
+          cp overrides/experience.css .site-source/assiris-site/overrides/experience.css
+          cp overrides/patch.py .site-source/assiris-site/overrides/patch.py
+          cd .site-source/assiris-site
+          python3 overrides/patch.py
 
       - name: Prepare GitHub Pages paths
         run: |
