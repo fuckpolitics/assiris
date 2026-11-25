@@ -303,3 +303,40 @@
 .assiris-reader-text{font-size:clamp(25px,2.9vw,32px);line-height:1.78}
 .assiris-map-node strong{font-size:21px}
 @media(max-width:760px){.assiris-reader-text{font-size:25px;line-height:1.76}.assiris-map-node strong{font-size:20px}}
+
+
+/* Editorial archive: replace the unusable scatter-map with a readable index */
+.assiris-archive-list{border-top:1px solid rgba(220,203,174,.2);margin-top:20px}
+.assiris-archive-list>a{display:grid;grid-template-columns:44px minmax(0,1fr) 58px 20px;gap:15px;align-items:center;padding:19px 8px;border-bottom:1px solid rgba(220,203,174,.15);color:#e7dfd1;transition:background .2s,padding .2s}
+.assiris-archive-list>a:hover{background:rgba(197,167,124,.07);padding-left:16px}
+.assiris-archive-list>a>span,.assiris-archive-list>a>small{font:10px var(--ui);color:#a99472}
+.assiris-archive-list>a strong{font:400 clamp(23px,2.5vw,30px)/1.15 var(--head)}
+.assiris-archive-list>a p{font:16px/1.55 var(--body);color:#a99f90;margin:7px 0 0}
+.assiris-archive-list>a>svg{width:17px;color:#c5a77d}
+.assiris-echo-visual{border-top:1px solid rgba(220,203,174,.2)}
+.assiris-echo-node{display:flex;flex-direction:column;gap:9px;padding:20px 8px;border-bottom:1px solid rgba(220,203,174,.16);color:#e7dfd1;text-decoration:none}
+.assiris-echo-node small{font:10px var(--ui);letter-spacing:.1em;color:#b89a70}
+.assiris-echo-node strong{font:400 27px var(--head)}
+.assiris-echo-node span{font:15px/1.6 var(--body);color:#b3a898}
+.assiris-journey-start select{width:100%;background:transparent;border:0;color:#eee7da;font:16px var(--body);padding:12px 0;outline:0}
+.assiris-journey-start select option{background:#211e19;color:#eee7da}
+.assiris-journey-track{margin-top:25px;border-top:1px solid rgba(220,203,174,.2)}
+.assiris-journey-stop{padding:18px 0;border-bottom:1px solid rgba(220,203,174,.17)}
+.assiris-journey-stop>button{display:flex;align-items:center;gap:16px;width:100%;text-align:left;color:#e7dfd1}
+.assiris-journey-stop>button span{font:10px var(--ui);color:#b89a70}
+.assiris-journey-stop>button strong{font:400 25px var(--head)}
+.assiris-journey-stop>button.active strong{color:#d8b88b}
+.assiris-journey-stop p{margin:9px 0 9px 28px;font:14px/1.6 var(--body);color:#aa9f8e}
+.assiris-journey-stop>a{display:inline-flex;align-items:center;gap:7px;margin-left:28px;color:#c7a77b;font:10px var(--ui)}
+.assiris-tabs button svg{width:16px;height:16px}
+.assiris-workspace{scroll-margin-top:18px}
+.assiris-reader-text{font-size:clamp(25px,2.9vw,32px);line-height:1.78}
+@media(max-width:760px){
+ .assiris-archive-list>a{grid-template-columns:30px minmax(0,1fr) 18px;gap:9px;padding:16px 2px}
+ .assiris-archive-list>a>small{display:none}
+ .assiris-archive-list>a strong{font-size:24px}
+ .assiris-archive-list>a p{font-size:15px}
+ .assiris-echo-node strong{font-size:24px}
+ .assiris-journey-stop>button strong{font-size:22px}
+ .assiris-reader-text{font-size:25px;line-height:1.76}
+}
