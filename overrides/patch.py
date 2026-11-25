@@ -102,4 +102,36 @@ reader_text = reader_text.replace('''                <button
 ''', "")
 reader.write_text(reader_text, encoding="utf-8")
 
+
+# Remove the biography page: the work should introduce the author.
+import re
+archive_text = archive.read_text(encoding="utf-8")
+archive_text = archive_text.replace('    ["/about", "Об авторе"],\n', "")
+archive_text = re.sub(
+    r'\) : page === "about" \? \(.*?\n        \) : \(\n          <section className="wrap inner narrow">',
+    ') : (\n          <section className="wrap inner narrow">',
+    archive_text,
+    count=1,
+    flags=re.S,
+)
+archive_text = archive_text.replace('"Разделы книги"', '"Разделы"')
+archive_text = archive_text.replace('Книга открывается без регистрации.', 'Архив доступен без регистрации.')
+archive_text = archive_text.replace('Книга произведений', 'Все произведения')
+archive_text = archive_text.replace('Онлайн-книга Александра Андрианова', 'ТЕКСТЫ АЛЕКСАНДРА АНДРИАНОВА')
+archive.write_text(archive_text, encoding="utf-8")
+
+catalog_text = catalog.read_text(encoding="utf-8")
+catalog_text = catalog_text.replace('useState("author")', 'useState("new")')
+catalog_text = catalog_text.replace('              <option value="author">Авторский порядок</option>\n', '')
+catalog_text = catalog_text.replace('Поиск по книге', 'Поиск по произведениям')
+catalog_text = catalog_text.replace('Онлайн-книга Александра Андрианова', 'Архив произведений')
+catalog.write_text(catalog_text, encoding="utf-8")
+
+prerender_text = prerender.read_text(encoding="utf-8")
+prerender_text = prerender_text.replace('  ["about"],\n', '')
+prerender_text = prerender_text.replace('  about: "Об авторе",\n', '')
+prerender_text = prerender_text.replace('Авторская книга Александра Андрианова: стихотворения, проза и литературные циклы.', 'Стихотворения и проза Александра Андрианова.')
+prerender_text = prerender_text.replace('Вернуться к книге', 'На главную')
+prerender.write_text(prerender_text, encoding="utf-8")
+
 print("Applied ASSIRIS experience overrides.")
