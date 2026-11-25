@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
     paths:
-      - "assiris-static-book.zip"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -24,23 +23,26 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Download site archive
+        run: |
+          curl -fL --retry 3 \
+            "https://d2ol7oe51mr4n9.cloudfront.net/user_3JHdFVA3SitavsnAmI8m3dn2ZBE/302b2a44-a34b-4209-ae84-424ddc4b587d.zip" \
+            -o /tmp/assiris-static-book.zip
+
       - name: Extract site archive
         run: |
           python3 - <<'PY'
           from pathlib import Path
           from zipfile import ZipFile
 
-          archive = Path("assiris-static-book.zip")
-          if not archive.exists():
-              raise SystemExit("Upload assiris-static-book.zip to the repository root first.")
+          archive = Path("/tmp/assiris-static-book.zip")
           with ZipFile(archive) as z:
-              names = z.namelist()
-              if not any(name.startswith("assiris-site/") for name in names):
-                  raise SystemExit("Unexpected archive structure: expected assiris-site/ at the ZIP root.")
+              if not any(name.startswith("assiris-site/") for name in z.namelist()):
+                  raise SystemExit("Unexpected archive structure.")
               z.extractall(".site-source")
           source = Path(".site-source/assiris-site")
           if not (source / "package.json").exists():
-              raise SystemExit("package.json was not found in assiris-site/.")
+              raise SystemExit("package.json was not found.")
           PY
 
       - name: Prepare GitHub Pages paths
