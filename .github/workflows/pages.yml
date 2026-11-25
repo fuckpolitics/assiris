@@ -61,23 +61,6 @@ jobs:
           cd .site-source/assiris-site
           python3 overrides/patch.py
 
-      - name: Prepare GitHub Pages paths
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          source = Path(".site-source/assiris-site")
-          for path in source.rglob("*"):
-              if path.is_file() and path.suffix in {".tsx", ".ts", ".css", ".html", ".js"}:
-                  try:
-                      text = path.read_text(encoding="utf-8")
-                  except UnicodeDecodeError:
-                      continue
-                  import re
-                  text = re.sub(r'"/(?!>)', '"/assiris/', text)
-                  path.write_text(text, encoding="utf-8")
-          PY
-
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
@@ -89,6 +72,7 @@ jobs:
           npm ci
           npm run build
           touch dist/.nojekyll
+          echo "assiris.art" > dist/CNAME
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
