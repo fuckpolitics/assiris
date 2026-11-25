@@ -1,135 +1,30 @@
 import { useMemo, useState } from "react";
-import { Search, Shuffle, ArrowDownRight, ArrowUpRight, MoveUpRight, X, Sparkles, ZoomIn, ZoomOut, Maximize2, BookOpen, Network, AudioLines, Compass, ArrowLeft, ArrowRight } from "lucide-react";
-import { Work, Settings, byNew, date, tags, norm } from "../lib/archive/reader";
+import { Search, ArrowUpRight, BookOpen, Link2, Compass, Shuffle, X } from "lucide-react";
+import { Work, Settings, byNew, tags, norm, urlOf } from "../lib/archive/reader";
 
-type View = "archive" | "echo" | "lexicon" | "journey";
+type Mode = "archive" | "echo" | "lexicon" | "journey";
 const STOP = new Set("и в во не на я мы вы он она оно они ты вы это этот эта эти тот та те а но или да же ли бы из к по от до за под над при для без как что где когда если то так уже ещё еще был была были быть есть нет мне меня тебе тебя его ее её их нас вам с со у о об обо про".split(/\s+/u));
-function cleanText(value: string) { return norm(value).toLocaleLowerCase("ru").replace(/ё/gu, "е"); }
-function wordsOf(value: string) { return cleanText(value).match(/[\p{L}\p{N}]+/gu) || []; }
-function excerptOf(value: string, limit = 190) { const clean = value.replace(/\s+/gu, " ").trim(); return clean.length > limit ? clean.slice(0, limit).replace(/\s+\S*$/u, "") + "…" : clean; }
-function hash(value: string) { let h = 0; for (let i=0;i<value.length;i++) h = (h*31 + value.charCodeAt(i))|0; return Math.abs(h); }
-function similarity(a: Set<string>, b: Set<string>) { let common=0; a.forEach(x=>{if(b.has(x))common++}); return common / Math.max(1, Math.sqrt(a.size*b.size)); }
-
-export default function Landing({ works, settings }: { works: Work[]; settings: Settings }) {
-  const sorted = useMemo(() => [...works].sort(byNew), [works]);
-  const [view,setView] = useState<View>("archive");
-  const [query,setQuery] = useState("");
-  const [activeTag,setActiveTag] = useState("");
-  const [currentId,setCurrentId] = useState<string | null>(null);
-  const [echoTerm,setEchoTerm] = useState("");
-  const [zoom,setZoom] = useState(1);
-  const [offset,setOffset] = useState({x:0,y:0});
-  const [drag,setDrag] = useState<{x:number;y:number;ox:number;oy:number}|null>(null);
-  const [journey,setJourney] = useState<string[]>([]);
-  const [journeyStep,setJourneyStep] = useState(0);
-  const [lexQuery,setLexQuery] = useState("");
-  const [featuredId,setFeaturedId] = useState<string | null>(null);
-  const current = sorted.find(w=>w.id===currentId) || null;
-  const featured = sorted.find(w=>w.id===featuredId) || sorted[0];
-
-  const tagCounts = useMemo(() => {
-    const counts = new Map<string,number>();
-    works.forEach(w=>tags(w,settings).forEach(t=>counts.set(t,(counts.get(t)||0)+1)));
-    return [...counts.entries()].sort((a,b)=>b[1]-a[1]);
-  },[works,settings]);
-
-  const filtered = useMemo(() => {
-    const needle=cleanText(query.trim());
-    return sorted.filter(w=>(!activeTag||tags(w,settings).includes(activeTag)) && (!needle||cleanText(w.title+" "+w.text+" "+tags(w,settings).join(" ")).includes(needle)));
-  },[sorted,query,activeTag,settings]);
-
-  const tokenData = useMemo(() => {
-    const counts = new Map<string,number>();
-    const docs = new Map<string,Set<string>>();
-    works.forEach(w=>{
-      const unique=new Set(wordsOf(w.text).filter(x=>x.length>2&&!STOP.has(x)));
-      unique.forEach(x=>{counts.set(x,(counts.get(x)||0)+1);if(!docs.has(x))docs.set(x,new Set());docs.get(x)!.add(w.id);});
-    });
-    return [...counts.entries()].map(([word,count])=>({word,count,docs:docs.get(word)?.size||0})).sort((a,b)=>b.count-a.count);
-  },[works]);
-  const lexFiltered = tokenData.filter(x=>!lexQuery||x.word.includes(cleanText(lexQuery))).slice(0,80);
-
-  const echoResults = useMemo(()=>{
-    const term=cleanText(echoTerm.trim());
-    if(!term)return [];
-    return works.filter(w=>w.id!==currentId).map(w=>{
-      const lines=w.text.split("\\n");
-      const found=lines.map(line=>({line,count:cleanText(line).split(escaped).length-1})).filter(x=>x.count>0);
-      return {work:w,found,count:found.reduce((s,x)=>s+x.count,0)};
-    }).filter(x=>x.count).sort((a,b)=>b.count-a.count);
-  },[works,echoTerm,currentId]);
-
-  const workTokens = useMemo(()=>new Map(works.map(w=>[w.id,new Set(wordsOf(w.text).filter(x=>x.length>3&&!STOP.has(x)))])),[works]);
-  const buildJourney = (start: Work) => {
-    const chosen=[start.id]; let prev=start;
-    for(let i=0;i<Math.min(5,works.length-1);i++){
-      const a=workTokens.get(prev.id)||new Set<string>();
-      const next=works.filter(w=>!chosen.includes(w.id)).map(w=>({w,score:similarity(a,workTokens.get(w.id)||new Set<string>())})).sort((x,y)=>y.score-x.score)[0];
-      if(!next||next.score===0)break;
-      chosen.push(next.w.id);prev=next.w;
-    }
-    setJourney(chosen);setJourneyStep(0);setView("journey");
-  };
-  const openWork=(id:string)=>{setCurrentId(id);setView("archive");};
-  const pickRandom=()=>{const pool=sorted.filter(w=>w.id!==featured?.id);setFeaturedId((pool[Math.floor(Math.random()*Math.max(1,pool.length))]||sorted[0])?.id||null);};
-
-  const nodePositions = useMemo(()=>filtered.map((w,i)=>{
-    const angle=i*2.3999632297, radius=70+Math.sqrt(i+1)*42;
-    const jitter=hash(w.id)%31;
-    return {w,x:690+Math.cos(angle)*(radius+jitter),y:480+Math.sin(angle)*(radius+jitter)*.68};
-  }),[filtered]);
-
-  return <main className="assiris-shell">
-    <section className="assiris-hero">
-      <div className="assiris-hero-meta"><span>ASSIRIS / АРХИВ ТЕКСТОВ</span><span>ПОЭЗИЯ И ПРОЗА · {works.length} ПРОИЗВЕДЕНИЙ</span></div>
-      <div className="assiris-hero-title"><h1>Александр<br/><em>Андрианов</em></h1><p>Не линейное чтение.<br/>Тексты, которые открывают друг друга.</p></div>
-      <div className="assiris-hero-foot"><span>СЛОВО ЗА СЛОВОМ</span><button onClick={()=>document.getElementById("assiris-workspace")?.scrollIntoView({behavior:"smooth"})}>ВОЙТИ В АРХИВ <ArrowDownRight size={16}/></button></div>
-    </section>
-
-    <section className="assiris-workspace" id="assiris-workspace">
-      <div className="assiris-workspace-head"><div><span className="assiris-eyebrow">ЕДИНОЕ ПРОСТРАНСТВО</span><h2>Поле текстов</h2></div><div className="assiris-total"><strong>{works.length}</strong><span>ПРОИЗВЕДЕНИЙ</span></div></div>
-      <nav className="assiris-tabs" aria-label="Разделы архива">
-        <button className={view==="archive"?"active":""} onClick={()=>setView("archive")}><Network size={16}/> Архив-карта</button>
-        <button className={view==="echo"?"active":""} onClick={()=>setView("echo")}><AudioLines size={16}/> Эхо</button>
-        <button className={view==="lexicon"?"active":""} onClick={()=>setView("lexicon")}><BookOpen size={16}/> Словарь</button>
-        <button className={view==="journey"?"active":""} onClick={()=>setView("journey")}><Compass size={16}/> Путешествие</button>
-      </nav>
-
-      {view==="archive" && <div className="assiris-panel">
-        <div className="assiris-tools"><label className="assiris-search"><Search size={19}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Искать по словам, строкам и названиям…"/>{query&&<button onClick={()=>setQuery("")}><X size={16}/></button>}</label><div className="assiris-zoom"><button onClick={()=>setZoom(z=>Math.max(.55,z-.15))} aria-label="Уменьшить"><ZoomOut/></button><span>{Math.round(zoom*100)}%</span><button onClick={()=>setZoom(z=>Math.min(1.8,z+.15))} aria-label="Увеличить"><ZoomIn/></button><button onClick={()=>{setZoom(1);setOffset({x:0,y:0})}} aria-label="Сбросить карту"><Maximize2/></button></div></div>
-        <div className="assiris-filter-tags"><button className={!activeTag?"active":""} onClick={()=>setActiveTag("")}>Все темы</button>{tagCounts.slice(0,14).map(([t,n])=><button key={t} className={activeTag===t?"active":""} onClick={()=>setActiveTag(activeTag===t?"":t)}>{t}<small>{n}</small></button>)}</div>
-        <div className="assiris-map-legend"><span>ПЕРЕМЕЩАЙ КАРТУ · ПРИБЛИЖАЙ И ИЗУЧАЙ</span><span>{filtered.length} / {works.length} ТЕКСТОВ</span></div>
-        <div className="assiris-map-viewport" onWheel={e=>{e.preventDefault();setZoom(z=>Math.max(.55,Math.min(1.8,z+(e.deltaY<0?.08:-.08))))}} onPointerDown={e=>{if((e.target as HTMLElement).closest("button"))return;setDrag({x:e.clientX,y:e.clientY,ox:offset.x,oy:offset.y});(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)}} onPointerMove={e=>{if(drag)setOffset({x:drag.ox+e.clientX-drag.x,y:drag.oy+e.clientY-drag.y})}} onPointerUp={()=>setDrag(null)} onPointerCancel={()=>setDrag(null)}>
-          <div className="assiris-map-world" style={{transform:"translate("+offset.x+"px,"+offset.y+"px) scale("+zoom+")"}}>
-            {nodePositions.map(({w,x,y},i)=><button key={w.id} className={"assiris-map-node tone-"+(hash(w.id)%5)} style={{left:x,top:y}} onClick={()=>openWork(w.id)}><span>{String(i+1).padStart(3,"0")}</span><strong>{w.title}</strong><small>{w.isProse?"ПРОЗА":w.isMiniature?"МИНИАТЮРА":"СТИХИ"}</small></button>)}
-          </div>
-          {!filtered.length&&<div className="assiris-map-empty">Ничего не найдено. Измени запрос или тему.</div>}
-        </div>
-        <div className="assiris-map-foot"><span>Каждая точка — отдельное произведение</span><button onClick={()=>{setQuery("");setActiveTag("");setZoom(1);setOffset({x:0,y:0})}}>Сбросить карту <X size={14}/></button></div>
-      </div>}
-
-      {view==="echo" && <div className="assiris-panel assiris-analysis">
-        <div className="assiris-section-intro"><span className="assiris-eyebrow">БУКВАЛЬНЫЕ ПЕРЕКЛИЧКИ</span><h3>Одно слово<br/><em>встречается снова.</em></h3><p>Введи слово или короткое выражение. Мы покажем точные текстовые совпадения в других произведениях — без трактовок и догадок.</p></div>
-        <label className="assiris-search assiris-wide-search"><Search/><input value={echoTerm} onChange={e=>setEchoTerm(e.target.value)} placeholder="Например: море, тишина, дорога…"/>{echoTerm&&<button onClick={()=>setEchoTerm("")}><X/></button>}</label>
-        {echoTerm&&<div className="assiris-echo-summary"><strong>{echoResults.reduce((s,x)=>s+x.count,0)}</strong><span>СОВПАДЕНИЙ В {echoResults.length} ПРОИЗВЕДЕНИЯХ</span></div>}
-        <div className="assiris-echo-visual">{echoResults.slice(0,24).map((item,i)=><button key={item.work.id} className="assiris-echo-node" onClick={()=>openWork(item.work.id)}><span className="assiris-echo-line" style={{width:Math.max(12,Math.min(100,item.count*18))+"%"}}/><small>{String(i+1).padStart(2,"0")} · {item.count}×</small><strong>{item.work.title}</strong><span>{excerptOf(item.found[0]?.line||"",130)}</span></button>)}{echoTerm&&!echoResults.length&&<p className="assiris-muted">Точных совпадений не найдено.</p>}</div>
-      </div>}
-
-      {view==="lexicon" && <div className="assiris-panel assiris-analysis">
-        <div className="assiris-section-intro"><span className="assiris-eyebrow">ЛЕКСИЧЕСКИЙ СЛОЙ КОРПУСА</span><h3>Словарь<br/><em>внутри текстов.</em></h3><p>Частотность слов и распределение по произведениям. Служебные слова исключены; словоформы пока считаются отдельно.</p></div>
-        <div className="assiris-lex-stats"><div><strong>{tokenData.length.toLocaleString("ru-RU")}</strong><span>РАЗНЫХ СЛОВ</span></div><div><strong>{tokenData.reduce((s,x)=>s+x.count,0).toLocaleString("ru-RU")}</strong><span>УПОТРЕБЛЕНИЙ</span></div><div><strong>{works.length}</strong><span>ТЕКСТОВ</span></div></div>
-        <label className="assiris-search assiris-wide-search"><Search/><input value={lexQuery} onChange={e=>setLexQuery(e.target.value)} placeholder="Найти слово в словаре…"/>{lexQuery&&<button onClick={()=>setLexQuery("")}><X/></button>}</label>
-        <div className="assiris-lex-grid">{lexFiltered.map((x,i)=><button key={x.word} onClick={()=>{setEchoTerm(x.word);setView("echo")}}><span>{String(i+1).padStart(2,"0")}</span><strong>{x.word}</strong><i style={{width:Math.max(3,x.count/(tokenData[0]?.count||1)*100)+"%"}}/><small>{x.count} · {x.docs} текстов</small></button>)}</div>
-      </div>}
-
-      {view==="journey" && <div className="assiris-panel assiris-analysis">
-        <div className="assiris-section-intro"><span className="assiris-eyebrow">МАРШРУТ ПО ТЕКСТОВЫМ ПЕРЕКЛИЧКАМ</span><h3>Переходи<br/><em>по следам слов.</em></h3><p>Маршрут строится по общим значимым словам между произведениями. Это статистическое сходство, не утверждение об авторском замысле.</p></div>
-        {!journey.length ? <div className="assiris-journey-start"><p>Выбери начальное произведение — и архив предложит цепочку текстовых соседств.</p><div>{sorted.slice(0,18).map(w=><button key={w.id} onClick={()=>buildJourney(w)}>{w.title}<ArrowUpRight size={14}/></button>)}</div></div> : <div className="assiris-journey-route"><div className="assiris-journey-track">{journey.map((id,i)=>{const w=sorted.find(x=>x.id===id);return w?<button key={id} className={i===journeyStep?"active":""} onClick={()=>setJourneyStep(i)}><span>{String(i+1).padStart(2,"0")}</span><strong>{w.title}</strong></button>:null})}</div><div className="assiris-journey-current"><span className="assiris-eyebrow">ОСТАНОВКА {journeyStep+1} / {journey.length}</span><h4>{sorted.find(w=>w.id===journey[journeyStep])?.title}</h4><p>{excerptOf(sorted.find(w=>w.id===journey[journeyStep])?.text||"",330)}</p><div><button onClick={()=>setJourneyStep(s=>Math.max(0,s-1))} disabled={journeyStep===0}><ArrowLeft/> Назад</button><button onClick={()=>setJourneyStep(s=>Math.min(journey.length-1,s+1))} disabled={journeyStep===journey.length-1}>Дальше <ArrowRight/></button><button onClick={()=>setJourney([])}>Новый маршрут <Shuffle/></button></div><button className="assiris-read-link" onClick={()=>openWork(journey[journeyStep])}>Открыть произведение целиком <MoveUpRight/></button></div></div>}
-      </div>}
-    </section>
-
-    {featured&&<section className="assiris-random"><div><span className="assiris-eyebrow">СЛУЧАЙНАЯ ВСТРЕЧА</span><h2>{featured.title}</h2><p>{excerptOf(featured.text,260)}</p><button onClick={()=>openWork(featured.id)}>Открыть текст <MoveUpRight/></button></div><button className="assiris-randomize" onClick={pickRandom}><Shuffle/> Другая встреча</button></section>}
-
-    {current&&<div className="assiris-reader-veil" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)setCurrentId(null)}}><article className="assiris-reader" role="dialog" aria-modal="true" aria-label={current.title}><div className="assiris-reader-top"><span>ASSIRIS · {current.isProse?"ПРОЗА":"ПОЭЗИЯ"}</span><button onClick={()=>setCurrentId(null)} aria-label="Закрыть"><X/></button></div><div className="assiris-reader-meta">{date(current.published,true)}</div><h2>{current.title}</h2><div className="assiris-reader-text">{current.text.split("\\n").map((line,i)=><p key={i}>{line||" "}</p>)}</div><div className="assiris-reader-actions"><button onClick={()=>{setEchoTerm(current.text.trim().split(/\\s+/u)[0]||"");setCurrentId(null);setView("echo")}}><AudioLines/> Найти эхо первого слова</button><button onClick={()=>buildJourney(current)}><Compass/> Путешествие от этого текста</button></div></article></div>}
-  </main>;
+const clean = (s:string) => norm(s).toLocaleLowerCase("ru").replace(/ё/gu,"е");
+const words = (s:string) => clean(s).match(/[\p{L}\p{N}]+/gu)||[];
+const esc = (s:string) => s.replace(/[.*+?^${}()|[\]\\]/gu,"\\$&");
+const excerpt = (s:string,n=190) => {const t=s.replace(/\s+/gu," ").trim();return t.length>n?t.slice(0,n).replace(/\s+\S*$/u,"")+"…":t};
+export default function Landing({works,settings}:{works:Work[];settings:Settings}) {
+ const sorted=useMemo(()=>[...works].sort(byNew),[works]);
+ const [mode,setMode]=useState<Mode>("archive"),[query,setQuery]=useState(""),[tag,setTag]=useState(""),[echo,setEcho]=useState(""),[lex,setLex]=useState(""),[start,setStart]=useState<string>(""),[step,setStep]=useState(0);
+ const tagCounts=useMemo(()=>{const m=new Map<string,number>();works.forEach(w=>tags(w,settings).forEach(t=>m.set(t,(m.get(t)||0)+1)));return [...m].sort((a,b)=>b[1]-a[1]);},[works,settings]);
+ const filtered=sorted.filter(w=>(!tag||tags(w,settings).includes(tag))&&(!clean(query)||clean(w.title+" "+w.text+" "+tags(w,settings).join(" ")).includes(clean(query))));
+ const echoResults=useMemo(()=>{const term=clean(echo.trim());if(!term)return [];const re=new RegExp(esc(term).replace(/ /gu,"\\s+"),"giu");return sorted.map(work=>{const matches=[...work.text.matchAll(re)];return {work,matches,count:matches.length,lines:work.text.split("\n").filter(line=>re.test(clean(line))).slice(0,3)};}).filter(x=>x.count).sort((a,b)=>b.count-a.count);},[sorted,echo]);
+ const lexicon=useMemo(()=>{const m=new Map<string,{count:number,docs:number}>();works.forEach(w=>{const seen=new Set<string>();words(w.text).filter(x=>x.length>2&&!STOP.has(x)).forEach(x=>{const d=m.get(x)||{count:0,docs:0};d.count++;if(!seen.has(x)){d.docs++;seen.add(x);}m.set(x,d);});});return [...m].map(([word,v])=>({word,...v})).sort((a,b)=>b.count-a.count);},[works]);
+ const chosen=sorted.find(w=>w.id===start);
+ const route=useMemo(()=>{if(!chosen)return [];const result=[chosen];let prev=chosen;while(result.length<6){const a=new Set(words(prev.text).filter(x=>x.length>3&&!STOP.has(x)));const next=sorted.filter(w=>!result.some(x=>x.id===w.id)).map(w=>{const b=new Set(words(w.text).filter(x=>x.length>3&&!STOP.has(x)));const common=[...a].filter(x=>b.has(x));return {w,common,score:common.length/Math.max(1,Math.sqrt(a.size*b.size))};}).sort((x,y)=>y.score-x.score)[0];if(!next||!next.common.length)break;result.push(next.w);prev=next.w;}return result;},[chosen,sorted]);
+ const nav=(m:Mode)=>{setMode(m);document.getElementById("assiris-workspace")?.scrollIntoView({behavior:"smooth",block:"start"});};
+ return <main className="assiris-shell">
+ <section className="nocturne"><div className="nocturne-photo"/><div className="nocturne-vignette"/><div className="nocturne-grain"/><div className="nocturne-center"><div className="nocturne-kicker"><i className="live-dot"/> АРХИВ ТЕКСТОВ · {works.length} ПРОИЗВЕДЕНИЙ</div><h1>Александр<br/><em>Андрианов</em></h1><div className="nocturne-rule"><i/> ПОЭЗИЯ И ПРОЗА <i/></div><button className="nocturne-enter" onClick={()=>document.getElementById("assiris-workspace")?.scrollIntoView({behavior:"smooth"})}>Открыть архив <b>↘</b></button></div><div className="nocturne-bottom"><span>ASSIRIS</span><span>СЛОВО ЗА СЛОВОМ</span></div></section>
+ <section className="assiris-workspace" id="assiris-workspace"><header className="assiris-workspace-head"><div><span className="assiris-eyebrow">ЕДИНОЕ ПРОСТРАНСТВО</span><h2>Архив произведений</h2></div><div className="assiris-total"><strong>{works.length}</strong><span>ТЕКСТОВ</span></div></header>
+ <nav className="assiris-tabs"><button className={mode==="archive"?"active":""} onClick={()=>setMode("archive")}><BookOpen/> Архив</button><button className={mode==="echo"?"active":""} onClick={()=>setMode("echo")}><Link2/> Эхо</button><button className={mode==="lexicon"?"active":""} onClick={()=>setMode("lexicon")}><Search/> Словарь</button><button className={mode==="journey"?"active":""} onClick={()=>setMode("journey")}><Compass/> Путешествие</button></nav>
+ {mode==="archive"&&<div className="assiris-panel"><label className="assiris-search"><Search/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Поиск по названиям и полным текстам…"/>{query&&<button onClick={()=>setQuery("")}><X/></button>}</label><div className="assiris-filter-tags"><button className={!tag?"active":""} onClick={()=>setTag("")}>Все темы</button>{tagCounts.map(([t,n])=><button key={t} className={tag===t?"active":""} onClick={()=>setTag(tag===t?"":t)}>{t}<small>{n}</small></button>)}</div><p className="assiris-map-legend">{filtered.length} произведений · выбери название, чтобы открыть текст</p><div className="assiris-archive-list">{filtered.map((w,i)=><a href={urlOf(w)} key={w.id}><span>{String(i+1).padStart(3,"0")}</span><div><strong>{w.title}</strong><p>{excerpt(w.text,150)}</p></div><small>{w.published?.slice(0,4)||""}</small><ArrowUpRight/></a>)}</div></div>}
+ {mode==="echo"&&<div className="assiris-panel assiris-analysis"><div className="assiris-section-intro"><span className="assiris-eyebrow">ТЕКСТОВЫЕ ПЕРЕКЛИЧКИ</span><h3>Фрагменты,<br/><em>которые возвращаются.</em></h3><p>Ищи слово или фразу. Сравнивай контексты, смотри, в каких произведениях и строках она появляется.</p></div><label className="assiris-search assiris-wide-search"><Search/><input value={echo} onChange={e=>setEcho(e.target.value)} placeholder="Введи слово или фразу…"/>{echo&&<button onClick={()=>setEcho("")}><X/></button>}</label><div className="assiris-echo-visual">{echoResults.map(({work,count,lines})=><a className="assiris-echo-node" href={urlOf(work)} key={work.id}><small>{count} совпадений · {work.published?.slice(0,4)||"без даты"}</small><strong>{work.title}</strong>{lines.map((line,i)=><span key={i}>{line}</span>)}</a>)}{echo&&echoResults.length===0&&<p className="assiris-muted">Совпадений не найдено.</p>}</div></div>}
+ {mode==="lexicon"&&<div className="assiris-panel assiris-analysis"><div className="assiris-section-intro"><span className="assiris-eyebrow">ЛЕКСИКА КОРПУСА</span><h3>Слова<br/><em>и их частота.</em></h3><p>Частота употребления и число произведений, в которых встречается слово. Словоформы считаются отдельно.</p></div><label className="assiris-search assiris-wide-search"><Search/><input value={lex} onChange={e=>setLex(e.target.value)} placeholder="Найти слово…"/>{lex&&<button onClick={()=>setLex("")}><X/></button>}</label><div className="assiris-lex-grid">{lexicon.filter(x=>!lex||x.word.includes(clean(lex))).slice(0,100).map((x,i)=><button key={x.word} onClick={()=>{setEcho(x.word);setMode("echo");}}><span>{i+1}</span><strong>{x.word}</strong><small>{x.count} раз · {x.docs} произведений</small></button>)}</div></div>}
+ {mode==="journey"&&<div className="assiris-panel assiris-analysis"><div className="assiris-section-intro"><span className="assiris-eyebrow">МАРШРУТ ПО КОРПУСУ</span><h3>Переходы<br/><em>между текстами.</em></h3><p>Выбери произведение. Для следующего шага алгоритм ищет общие значимые слова и показывает, чем связаны два текста. Это лексическая близость, не толкование смысла.</p></div><div className="assiris-journey-start"><label className="assiris-search"><Search/><select value={start} onChange={e=>{setStart(e.target.value);setStep(0);}}><option value="">Выбрать начальное произведение…</option>{sorted.map(w=><option key={w.id} value={w.id}>{w.title}</option>)}</select></label>{route.length>0&&<div className="assiris-journey-track">{route.map((w,i)=>{const prev=route[i-1];const common=prev?[...new Set(words(prev.text).filter(x=>x.length>3&&!STOP.has(x)))].filter(x=>new Set(words(w.text)).has(x)).slice(0,8):[];return <div className="assiris-journey-stop" key={w.id}><button className={step===i?"active":""} onClick={()=>setStep(i)}><span>{String(i+1).padStart(2,"0")}</span><strong>{w.title}</strong></button>{i>0&&<p>Общие слова: {common.join(" · ")||"нет точных совпадений"}</p>}<a href={urlOf(w)}>Открыть произведение <ArrowUpRight/></a></div>;})}</div>}</div></div>}
+ </section></main>;
 }
