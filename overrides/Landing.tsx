@@ -41,10 +41,6 @@ export default function Landing({ works, settings }: { works: Work[]; settings: 
         <div className="nocturne-photo" />
         <div className="nocturne-vignette" />
         <div className="nocturne-grain" />
-        <div className="nocturne-top">
-          <a href="/" className="nocturne-mark"><span>A</span><i>ASSIRIS</i></a>
-          <div className="nocturne-topright"><span>АРХИВ ТЕКСТОВ</span><a href="#atlas">ОТКРЫТЬ АРХИВ <ArrowUpRight size={13} /></a></div>
-        </div>
         <div className="nocturne-center">
           <div className="nocturne-kicker"><span className="live-dot" /> ПОЭЗИЯ И ПРОЗА · {works.length} ПРОИЗВЕДЕНИЙ</div>
           <h1>Александр<br /><em>Андрианов</em></h1>
