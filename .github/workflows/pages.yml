@@ -68,7 +68,8 @@ jobs:
                       text = path.read_text(encoding="utf-8")
                   except UnicodeDecodeError:
                       continue
-                  text = text.replace('"/', '"/assiris/').replace("' /", "'/assiris/").replace("'/", "'/assiris/")
+                  import re
+                  text = re.sub(r'(["\\'])/(?!>)', r'\\1/assiris/', text)
                   path.write_text(text, encoding="utf-8")
           PY
 
