@@ -1,0 +1,91 @@
+name: Deploy Assiris to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "assiris-static-book.zip"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Extract site archive
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          archive = Path("assiris-static-book.zip")
+          if not archive.exists():
+              raise SystemExit("Upload assiris-static-book.zip to the repository root first.")
+          with ZipFile(archive) as z:
+              names = z.namelist()
+              if not any(name.startswith("assiris-site/") for name in names):
+                  raise SystemExit("Unexpected archive structure: expected assiris-site/ at the ZIP root.")
+              z.extractall(".site-source")
+          source = Path(".site-source/assiris-site")
+          if not (source / "package.json").exists():
+              raise SystemExit("package.json was not found in assiris-site/.")
+          PY
+
+      - name: Prepare GitHub Pages paths
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          source = Path(".site-source/assiris-site")
+          for path in source.rglob("*"):
+              if path.is_file() and path.suffix in {".tsx", ".ts", ".css", ".html", ".js"}:
+                  try:
+                      text = path.read_text(encoding="utf-8")
+                  except UnicodeDecodeError:
+                      continue
+                  text = text.replace('"/', '"/assiris/').replace("' /", "'/assiris/").replace("'/", "'/assiris/")
+                  path.write_text(text, encoding="utf-8")
+          PY
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build static site
+        working-directory: .site-source/assiris-site
+        run: |
+          npm ci
+          npm run build
+          touch dist/.nojekyll
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .site-source/assiris-site/dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
