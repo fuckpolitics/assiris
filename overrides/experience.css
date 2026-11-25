@@ -487,3 +487,11 @@
  .assiris-journey-start{width:100%}
  .assiris-journey-stop>button strong{font-size:24px}
 }
+
+/* Corpus typography: titles and excerpts are intentionally easier to read */
+.assiris-map-node strong{font-size:23px;line-height:1.16}
+.assiris-map-node span{font-size:14px;line-height:1.5}
+@media(max-width:760px){
+ .assiris-map-node strong{font-size:22px}
+ .assiris-map-node span{font-size:13px;line-height:1.48}
+}
