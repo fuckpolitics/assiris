@@ -25,10 +25,11 @@ s = reader.read_text(encoding="utf-8")
 if "const [echoOpen, setEchoOpen] = useState(false);" not in s:
     marker = "export default function Reader"
     function_start = s.find(marker)
-    body_start = s.find("{\n", function_start)
+    body_start = s.find(") {", function_start)
     if function_start < 0 or body_start < 0:
-        raise SystemExit("Could not locate the Reader component to add Echo state.")
-    s = s[:body_start + 2] + "  const [echoOpen, setEchoOpen] = useState(false);\n" + s[body_start + 2:]
+        raise SystemExit("Could not locate the Reader component body to add Echo state.")
+    body_start += 3
+    s = s[:body_start] + "\n  const [echoOpen, setEchoOpen] = useState(false);" + s[body_start:]
 if 'import Echo from "./Echo";' not in s:
     s = s.replace('import {\n  Work,', 'import Echo from "./Echo";\nimport {\n  Work,')
 s = s.replace('  Image as ImageIcon,\n  ExternalLink,', '  Image as ImageIcon,\n  Link2,\n  ExternalLink,')
