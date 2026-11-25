@@ -66,4 +66,40 @@ css = root / "public" / "site.css"
 with css.open("a", encoding="utf-8") as f:
     f.write("\n" + (overrides / "experience.css").read_text(encoding="utf-8") + "\n")
 
+
+export_block = '''          {page === "favorites" && matches.length > 0 && (
+            <button
+              className="textlink"
+              onClick={() =>
+                fileDownload(
+                  new Blob(
+                    [
+                      matches
+                        .map((w) => w.title + "\\n" + location.origin + urlOf(w))
+                        .join("\\n\\n"),
+                    ],
+                    { type: "text/plain;charset=utf-8" },
+                  ),
+                  "assiris-izbrannoe.txt",
+                )
+              }
+            >
+              <Download size={15} />
+              Экспорт
+            </button>
+          )}'''
+catalog_text = catalog.read_text(encoding="utf-8")
+catalog_text = catalog_text.replace(export_block, "")
+catalog.write_text(catalog_text, encoding="utf-8")
+
+reader_text = reader.read_text(encoding="utf-8")
+reader_text = reader_text.replace('''                <button
+                  className="option"
+                  onClick={() => quoteCard(w, selection)}
+                >
+                  <ImageIcon size={15} /> Скачать карточку цитаты
+                </button>
+''', "")
+reader.write_text(reader_text, encoding="utf-8")
+
 print("Applied ASSIRIS experience overrides.")
