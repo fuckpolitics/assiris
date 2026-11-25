@@ -495,3 +495,45 @@
  .assiris-map-node strong{font-size:22px}
  .assiris-map-node span{font-size:13px;line-height:1.48}
 }
+
+
+/* Compact title scene: keep the portrait atmosphere without making it the whole mobile page */
+.nocturne{
+  height:clamp(420px,58svh,600px);
+  min-height:420px;
+  max-height:600px;
+}
+.nocturne-center{
+  top:47%;
+  transform:translateY(-50%);
+}
+.nocturne-kicker{margin-bottom:18px}
+.nocturne-center h1{
+  font-size:clamp(64px,8vw,108px);
+  line-height:.88;
+}
+.nocturne-rule{margin:20px 0 14px}
+.nocturne-bottom{bottom:14px}
+@media(max-width:760px){
+  .nocturne{
+    height:clamp(330px,48svh,400px);
+    min-height:330px;
+    max-height:400px;
+  }
+  .nocturne-center{
+    top:45%;
+    left:20px;
+    width:calc(100% - 40px);
+    transform:translateY(-50%);
+  }
+  .nocturne-kicker{font-size:7px;margin-bottom:14px}
+  .nocturne-center h1{
+    font-size:clamp(48px,11.5vw,66px);
+    line-height:.9;
+  }
+  .nocturne-center h1 em{padding-left:18px}
+  .nocturne-rule{margin:16px 0 12px;font-size:7px}
+  .nocturne-enter{font-size:10px}
+  .nocturne-enter b{width:30px;height:30px}
+  .nocturne-bottom{bottom:10px;left:20px;right:20px;font-size:6px}
+}
