@@ -21,6 +21,17 @@ archive.write_text(s, encoding="utf-8")
 
 reader = components / "Reader.tsx"
 s = reader.read_text(encoding="utf-8")
+# Add the Echo panel state inside the Reader component before its other hooks.
+if "const [echoOpen, setEchoOpen] = useState(false);" not in s:
+    import re
+    s, count = re.subn(
+        r'(export default function Reader[\\s\\S]*?\\)\\s*\\{\\n)',
+        r'\\1  const [echoOpen, setEchoOpen] = useState(false);\\n',
+        s,
+        count=1,
+    )
+    if count == 0:
+        raise SystemExit("Could not locate the Reader component to add Echo state.")
 if 'import Echo from "./Echo";' not in s:
     s = s.replace('import {\n  Work,', 'import Echo from "./Echo";\nimport {\n  Work,')
 s = s.replace('  Image as ImageIcon,\n  ExternalLink,', '  Image as ImageIcon,\n  Link2,\n  ExternalLink,')
