@@ -52,8 +52,6 @@ export default function Landing({ works, settings }: { works: Work[]; settings: 
   const echoResults = useMemo(()=>{
     const term=cleanText(echoTerm.trim());
     if(!term)return [];
-    const escaped=term.replace(/[.*+?^${}()|[\]\\]/gu,"\\term.replace(/[.*+?^${}()|[\\]\\\\]/gu,"\\\\$&")").replace(/ /gu,"\\\\s+");
-    const re=new RegExp("(^|[^\\p{L}\\p{N}_])("+escaped+")(?=$|[^\\p{L}\\p{N}_])","giu");
     return works.filter(w=>w.id!==currentId).map(w=>{
       const lines=w.text.split("\\n");
       const found=lines.map(line=>({line,count:cleanText(line).split(escaped).length-1})).filter(x=>x.count>0);
