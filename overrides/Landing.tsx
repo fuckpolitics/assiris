@@ -51,7 +51,7 @@ export default function Landing({ works, settings }: { works: Work[]; settings: 
       <section className="directions wrap">
         <div className="section-intro"><span className="micro">РАЗНЫЕ ВХОДЫ В АРХИВ</span><h2>Выберите направление</h2><p>Или позвольте текстам привести вас туда, куда вы не собирались.</p></div>
         <div className="direction-grid">
-          {categories.map(([category, count], index) => <a className={`direction direction-${index + 1}`} href={`/library?theme=${encodeURIComponent(category)}`} key={category}><span className="direction-number">0{index + 1}</span><span className="direction-name">{category}</span><span className="direction-count">{count} {plural(count)}</span><span className="direction-arrow">↗</span></a>)}
+          {categories.map(([category, count], index) => <a className={`direction direction-${index + 1}`} href={`/assiris/library?theme=${encodeURIComponent(category)}`} key={category}><span className="direction-number">0{index + 1}</span><span className="direction-name">{category}</span><span className="direction-count">{count} {plural(count)}</span><span className="direction-arrow">↗</span></a>)}
         </div>
       </section>
 
