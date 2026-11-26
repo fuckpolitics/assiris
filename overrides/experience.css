@@ -584,3 +584,16 @@
  .atlas-node strong{font-size:18px}
  .atlas-node-excerpt{font-size:11px;line-height:1.45;-webkit-line-clamp:3}
 }
+
+
+/* Respect the active site theme in the main landing workspace. */
+.assiris-shell{background:var(--bg)!important;color:var(--ink)!important}
+.assiris-workspace{background:var(--bg)!important;color:var(--ink)!important}
+.assiris-workspace-head h2,.assiris-panel{color:var(--ink)}
+.assiris-tabs{border-bottom-color:var(--line)}
+.assiris-tabs button{color:var(--muted)}
+.assiris-tabs button.active,.assiris-tabs button:hover{color:var(--gold);border-bottom-color:var(--gold)}
+.assiris-search{border-bottom-color:var(--gold);color:var(--gold)}
+.assiris-search input,.assiris-search select{color:var(--ink)}
+.assiris-search input::placeholder{color:var(--muted)}
+.assiris-search select option{background:var(--bg);color:var(--ink)}
